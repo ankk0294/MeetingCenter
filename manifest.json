@@ -1,0 +1,10 @@
+{
+    "name": "MeetingCenter",
+    "version": "0.1",
+    "manifest_version": 2,
+    "description": "Meeting center extension",
+    "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA+DyQkGulRoVUI8lVXnGs+0WVMgb/UdeEwFp4vz1zCdbBvaqFlFVinqpgu2nqLmsS30xFXXlbMMNOfFIS1pF7z9q/xjCKzrHLenuJxC53TaRRUAZ++NYJfWDqVchxqovRnlFRqTfOmGtEDRkwRft01//XdUJRlrJ+rmzMZ3o30QTCgoH1/wq8ZpI+YPlEnKUE2f7gbkUZPl4z8I7XZdrMxCLSMP2yFfciNWUvN8T+BkUcez1KyJEhbHovQfPdVUaMmFtwYeHrBvXq4hN75780nKM22VxlDps1KYazvejTfhq4yX7pwmlytd3n+nMBHpfRNlWmtBb33s8Cq29JklzqsQIDAQAB",
+    "browser_action": {
+        "default_popup": "index.html"
+    }
+}
