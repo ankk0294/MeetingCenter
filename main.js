@@ -98,6 +98,5 @@ function display_meeting_data(meeting_data) {
 }
 
 function start_timer(meeting_detail) {
-    console.log(meeting_detail);
     chrome.runtime.sendMessage(JSON.stringify(meeting_detail));
 }

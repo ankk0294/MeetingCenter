@@ -15,7 +15,7 @@ chrome.runtime.onStartup.addListener(
 
 chrome.runtime.onMessage.addListener(
     function(request, sender, senderResponse) {
-        meeting_detail = request;
+        meeting_detail = JSON.parse(request);
         startBadgeTimer();
     }
 );
