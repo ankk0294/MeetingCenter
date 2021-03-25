@@ -242,12 +242,3 @@ function display_meeting_data(meeting_data) {
 function start_timer(meeting_detail) {
     chrome.runtime.sendMessage(JSON.stringify(meeting_detail));
 }
-
-var opt = {
-    type: 'list',
-    title: 'keep burning',
-    message: 'Primary message to display',
-    priority: 1,
-    items: [{ title: '', message: ''}]
-
-};
