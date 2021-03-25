@@ -53,6 +53,7 @@ function display_meeting_data(meeting_data) {
     document.getElementById("table_heading").appendChild(meeting_url);
 
     // Create rows in the table.
+    var sent_first_meeting = false;
     const row_count = 5;
     var current_count = 0;
     for (var i = 0; i < meeting_data.value.length; i++) {
@@ -63,6 +64,10 @@ function display_meeting_data(meeting_data) {
         current_count += 1;
         if (current_count > row_count) {
             break;
+        }
+        if (!sent_first_meeting) {
+            start_timer(meeting_detail);
+            sent_first_meeting = true;
         }
         var row = document.createElement("tr");
         row.setAttribute("id", "row" + i);
@@ -92,12 +97,7 @@ function display_meeting_data(meeting_data) {
     }
 }
 
-var opt = {
-    type: 'list',
-    title: 'keep burning',
-    message: 'Primary message to display',
-    priority: 1,
-    items: [{ title: '', message: ''}]
-
-};
-chrome.notifications.create('id', opt, function(id) {});
+function start_timer(meeting_detail) {
+    console.log(meeting_detail);
+    chrome.runtime.sendMessage(JSON.stringify(meeting_detail));
+}
