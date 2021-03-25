@@ -1,5 +1,6 @@
 const TOKEN = "";
 const URL = "https://graph.microsoft.com/v1.0/me/calendarview?startdatetime=2021-03-25T11:27:29.430Z&enddatetime=2021-03-30T11:27:29.430Z&orderby=start/dateTime"
+const NEW_MEETING_URL = "https://graph.microsoft.com/v1.0/me/events"
 
 fetch_data();
 
@@ -17,22 +18,163 @@ async function fetch_data() {
     display_meeting_data(response_data);
 }
 
+function createMeeting() {
+    var request = new XMLHttpRequest();
+    var bearer = 'Bearer ' + TOKEN;
+    var prefer = 'outlook.timezone="India Standard Time"';
+    request.open("POST", NEW_MEETING_URL, true);
+    request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    request.setRequestHeader("Authorization", bearer);
+    request.setRequestHeader("Prefer", prefer);
+    var element = document.getElementById('subject');
+    var subject = element.value;
+    element = document.getElementById('content');
+    var content = element.value;
+    element = document.getElementById('receipent');
+    var receipent = element.value;
+    element = document.getElementById('start_time');
+    var start_time = element.value;
+    element = document.getElementById('end_time');
+    var end_time = element.value;
+    request.send(JSON.stringify({
+        "subject": subject,
+        "body": {
+        "contentType": "HTML",
+          "content": content
+            },
+            "start": {
+                "dateTime": start_time,
+                "timeZone": "India Standard Time"
+            },
+            "end": {
+                "dateTime": end_time,
+                "timeZone": "India Standard Time"
+            },
+            "location":{
+                "displayName":"Teams"
+            },
+            "attendees": [
+              {
+                "emailAddress": {
+                  "address":receipent
+                },
+       "type": "required"
+           }
+        ],
+        "allowNewTimeProposals": true,
+        "transactionId":"7E163156-7762-4BEB-A1C6-729EA81755A7"
+    }));
+    fetch_data();
+}
+
+function addMeeting() {
+    var root_element = document.getElementById("root");
+    if (root_element != undefined) {
+        root_element.innerHTML = "";
+    }
+
+    var start_time_div = document.createElement("div");
+    var start_time_text = document.createTextNode("Start Time");
+    start_time_div.appendChild(start_time_text);
+    var start_time = document.createElement("Input");
+    start_time.setAttribute("id", "start_time");
+    start_time.setAttribute("type", "datetime-local");
+    start_time_div.appendChild(start_time);
+
+    var end_time_div = document.createElement("div");
+    var end_time_text = document.createTextNode("End Time");
+    end_time_div.appendChild(end_time_text);
+    var end_time = document.createElement("Input");
+    end_time.setAttribute("id", "end_time");
+    end_time.setAttribute("type", "datetime-local");
+    end_time_div.appendChild(end_time);
+
+    var subject_div = document.createElement("div");
+    var subject_text = document.createTextNode("Subject");
+    subject_div.appendChild(subject_text);
+    var subject = document.createElement("Input");
+    subject.setAttribute("id", "subject");
+    subject.setAttribute("type", "text");
+    subject_div.appendChild(subject);
+
+    var text_area_div = document.createElement("div");
+    var text_area_text = document.createTextNode("Message Content");
+    text_area_div.appendChild(text_area_text);
+    var text_area = document.createElement("Input");
+    text_area.setAttribute("id", "content");
+    text_area.setAttribute("type", "text");
+    text_area_div.appendChild(text_area);
+
+    var receipent_div = document.createElement("div");
+    var receipent_text = document.createTextNode("Receipient");
+    receipent_div.appendChild(receipent_text);
+    var receipent = document.createElement("Input");
+    receipent.setAttribute("id", "receipent");
+    receipent.setAttribute("type", "email");
+    receipent_div.appendChild(receipent);
+
+    var send = document.createElement("Input");
+    send.setAttribute("id", "send");
+    send.setAttribute("type", "button");
+    send.setAttribute("value", "Send");
+
+    var cancel = document.createElement("Input");
+    cancel.setAttribute("id", "cancel");
+    cancel.setAttribute("type", "button");
+    cancel.setAttribute("value", "Cancel");
+
+    root_element.appendChild(start_time_div);
+    root_element.appendChild(end_time_div);
+    root_element.appendChild(subject_div);
+    root_element.appendChild(text_area_div);
+    root_element.appendChild(receipent_div);
+    root_element.appendChild(send);
+    root_element.appendChild(cancel);
+
+    var sendButton = document.getElementById('send');
+    sendButton.addEventListener('click', function() {
+        createMeeting();
+    }, false);
+    var cancelButton = document.getElementById('cancel');
+    cancelButton.addEventListener('click', function() {
+        fetch_data();
+    }, false);
+    // fetch_data();
+}
+
 function display_meeting_data(meeting_data) {
     if (!meeting_data.value) {
         return;
     }
+    var root_element = document.getElementById("root");
+    if (root_element != undefined) {
+        root_element.innerHTML = "";
+    }
+    
+    var add_meeting = document.createElement("Input");
+    add_meeting.setAttribute("id", "addMeeting");
+    add_meeting.setAttribute("type", "button");
+    add_meeting.setAttribute("value", "Add Meeting");
+    root_element.appendChild(add_meeting);
+
+    var checkPageButton = document.getElementById('addMeeting');
+    checkPageButton.addEventListener('click', function() {
+        addMeeting();
+    }, false);
+
     if (meeting_data.value.length == 0) {
         var no_meeting_div = document.createElement("div");
+        no_meeting_div.setAttribute("id", "NoMeeting");
         var name_text = document.createTextNode("No meetings");
         no_meeting_div.appendChild(name_text);
         no_meeting_div.setAttribute("id", "no_meeting");
-        document.body.appendChild(no_meeting_div);
+        root_element.appendChild(no_meeting_div);
         return;
     }
     // Create table.
     var table_element = document.createElement("table");
     table_element.setAttribute("id", "meeting_table");
-    document.body.appendChild(table_element);
+    root_element.appendChild(table_element);
 
     // Create table headings.
     var heading = document.createElement("tr");
@@ -100,3 +242,12 @@ function display_meeting_data(meeting_data) {
 function start_timer(meeting_detail) {
     chrome.runtime.sendMessage(JSON.stringify(meeting_detail));
 }
+
+var opt = {
+    type: 'list',
+    title: 'keep burning',
+    message: 'Primary message to display',
+    priority: 1,
+    items: [{ title: '', message: ''}]
+
+};
