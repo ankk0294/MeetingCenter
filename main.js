@@ -1,12 +1,14 @@
 const TOKEN = "";
-const URL = "https://graph.microsoft.com/v1.0/me/calendarview?startdatetime=2021-03-25T11:27:29.430Z&enddatetime=2021-03-30T11:27:29.430Z&orderby=start/dateTime"
 const NEW_MEETING_URL = "https://graph.microsoft.com/v1.0/me/events"
 
-fetch_data();
+fetch_data()
 
 async function fetch_data() {
     var bearer = 'Bearer ' + TOKEN;
     var prefer = 'outlook.timezone="India Standard Time"';
+    var start_time = new Date();
+    var end_time = new Date(start_time.getTime() + 24 * 60 * 60 * 1000);
+    const URL = "https://graph.microsoft.com/v1.0/me/calendarview?startdatetime="+ start_time.toISOString() +"&enddatetime=" + end_time.toISOString() +"&orderby=start/dateTime"
     let data = await fetch(URL, {
         method: 'GET',
         headers: {
@@ -157,6 +159,17 @@ function display_meeting_data(meeting_data) {
     add_meeting.setAttribute("value", "Add Meeting");
     root_element.appendChild(add_meeting);
 
+    var auto_join_div = document.createElement("div");
+    auto_join_div.setAttribute("id", "autoJoin");
+    var autojoin_text = document.createTextNode("Auto Join");
+    auto_join_div.appendChild(autojoin_text);
+    var auto_join_check_box = document.createElement("Input");
+    auto_join_check_box.setAttribute("id", "autoJoinCheck");
+    auto_join_check_box.setAttribute("type", "checkbox");
+    auto_join_check_box.setAttribute("checked","true");
+    auto_join_div.appendChild(auto_join_check_box);
+    root_element.appendChild(auto_join_div);
+
     var checkPageButton = document.getElementById('addMeeting');
     checkPageButton.addEventListener('click', function() {
         addMeeting();
@@ -200,8 +213,10 @@ function display_meeting_data(meeting_data) {
     var current_count = 0;
     for (var i = 0; i < meeting_data.value.length; i++) {
         let meeting_detail = meeting_data.value[i];
-        if (!meeting_detail.isOnlineMeeting) {
-          continue;
+        let date_format = new Date(meeting_detail.start.dateTime);
+        var current_time = new Date();
+        if (date_format < current_time) {
+            continue;
         }
         current_count += 1;
         if (current_count > row_count) {
@@ -220,22 +235,33 @@ function display_meeting_data(meeting_data) {
         name.appendChild(subject);
         document.getElementById("row" + i).appendChild(name);
         var time = document.createElement("td");
-        let date_format = new Date(meeting_detail.start.dateTime);
         var date_string = date_format.toLocaleDateString();
         var time_string = date_format.toLocaleTimeString();
         var trimmed_time_string = time_string.substring(0, time_string.length-6) + " " + time_string.substring(time_string.length-2, time_string.length);
         var start_time = document.createTextNode(date_string + "\n" + trimmed_time_string);
         time.appendChild(start_time);
         document.getElementById("row" + i).appendChild(time);
-        var url = document.createElement("td");
-        var link_element = document.createElement("a");
-        var join_url = document.createTextNode("Join URL");
-        link_element.appendChild(join_url);
-        link_element.title = "Join URL";
-        link_element.setAttribute("class", "button");
-        link_element.href = meeting_detail.onlineMeeting.joinUrl;
-        url.appendChild(link_element);
-        document.getElementById("row" + i).appendChild(url);
+        if (meeting_detail.isOnlineMeeting) {
+            var url = document.createElement("td");
+            var link_element = document.createElement("a");
+            var join_url = document.createTextNode("Join URL");
+            link_element.appendChild(join_url);
+            link_element.title = "Join URL";
+            link_element.setAttribute("class", "button");
+            link_element.href = meeting_detail.onlineMeeting.joinUrl;
+            url.appendChild(link_element);
+            document.getElementById("row" + i).appendChild(url);
+        }
+    }
+
+    if (current_count == 0) {
+        var no_meeting_div = document.createElement("div");
+        no_meeting_div.setAttribute("id", "NoMeeting");
+        var name_text = document.createTextNode("No meetings");
+        no_meeting_div.appendChild(name_text);
+        no_meeting_div.setAttribute("id", "no_meeting");
+        root_element.appendChild(no_meeting_div);
+        return;
     }
 }
 

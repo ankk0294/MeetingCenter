@@ -1,27 +1,38 @@
 var meeting_detail;
-var badge_text = "MN";
+var badge_text_static = "Upcoming Meeting: ";
 var badge_show_timer = 0.1;
-var badge_remove_timer = 0.1;
+var badge_remove_timer = 5;
+var meeting_url = "";
 
 const showBadge = "showBadge";
 const clearBadge = "clearBadge";
+const autoJoin = "autojoin";
+
 
 chrome.runtime.onStartup.addListener(
     () => {
         // TODO: Load meeting detail and set it to `meeting_detail`.
-        startBadgeTimer();
     }
 );
 
 chrome.runtime.onMessage.addListener(
     function(request, sender, senderResponse) {
         meeting_detail = JSON.parse(request);
-        startBadgeTimer();
+        startBadgeTimer(meeting_detail);
     }
 );
 
-function setBadgeAndTimers() {
-    //TODO: Set `badge_text`, `badge_show_timer` and `badge_remove_timer` based on meeting_detail.
+function setBadgeAndTimers(meeting_detail) {
+    badge_text = "";
+    badge_text = badge_text_static+" "+meeting_detail.subject;
+    var meeting_time = new Date(meeting_detail.start.dateTime)
+    var current_time = new Date();
+    if (meeting_time < current_time) {
+       return;
+    }
+    badge_show_timer = new Date(meeting_time.getTime() - 5 * 60 * 1000).getTime();
+    meeting_url = meeting_detail.onlineMeeting.joinUrl;
+    chrome.alarms.create(autoJoin, {when: meeting_time.getTime()});
 }
 
 function cleanAlarms() {
@@ -30,10 +41,10 @@ function cleanAlarms() {
     chrome.alarms.clear(clearBadge);
 }
 
-function startBadgeTimer() {
-    setBadgeAndTimers();
+function startBadgeTimer(meeting_detail) {
+    setBadgeAndTimers(meeting_detail);
     cleanAlarms();
-    chrome.alarms.create(showBadge, {delayInMinutes: badge_show_timer});
+    chrome.alarms.create(showBadge, {when: badge_show_timer});
 }
 
 function setBadgeText(badge_text, badge_remove_timer) {
@@ -55,6 +66,11 @@ chrome.alarms.onAlarm.addListener(
             clearBadgeText();
         } else if (alarm.name == showBadge) {
             setBadgeText(badge_text, badge_remove_timer);
+        } else if (alarm.name == autoJoin) {
+            chrome.tabs.create({
+                url: meeting_url
+           });
+           clearBadgeText();
         }
     }
 );
